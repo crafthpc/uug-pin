@@ -10,7 +10,7 @@ UINT64 numInsns = 0;
 
 UINT64 additions = 0, subtractions = 0, multiplications = 0, divisions = 0,
        arithmetic = 0, othArith = 0, compare = 0, load_store = 0,
-       conversion = 0, control = 0, logical = 0, shuffle = 0;
+       conversion = 0, control = 0, logical = 0, shuffle = 0, integer = 0;
 
 UINT64 totalUnhandledInstructions = 0;
 
@@ -78,6 +78,11 @@ VOID count_shuffle (UINT32 id)
     shuffle++;
 }
 
+VOID count_integer (UINT32 id)
+{
+    integer++;
+}
+
 /*
  * instrumentation procedure (called when a new instruction is executed for the
  * first time)
@@ -121,7 +126,7 @@ VOID instrumentInstruction (INS ins, VOID *v)
 
     case XED_ICLASS_SHUFPD: INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_shuffle, IARG_END); break;
 
-    // binary arithmetic operations
+    // double-precision binary arithmetic operations
     case XED_ICLASS_ADDPD: 
     case XED_ICLASS_ADDSD: INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_add, IARG_END); break;
     case XED_ICLASS_SUBPD: 
@@ -135,7 +140,7 @@ VOID instrumentInstruction (INS ins, VOID *v)
     case XED_ICLASS_MINPD: 
     case XED_ICLASS_MAXPD:
 
-    // unary arithmetic operations
+    // double-precision unary arithmetic operations
     case XED_ICLASS_SQRTSD:  
     case XED_ICLASS_ROUNDSD:
     case XED_ICLASS_SQRTPD:
@@ -265,22 +270,19 @@ VOID instrumentInstruction (INS ins, VOID *v)
     case XED_ICLASS_CMPSD_XMM:      // compare scalar double
         INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_compare, IARG_END); break;
 
-    // packed integer and single-precision operations
+    // packed integer operations
     case XED_ICLASS_PADDB:          // add packed 8-bit integers
     case XED_ICLASS_PADDW:          // add packed 16-bit integers
     case XED_ICLASS_PADDD:          // add packed 32-bit integers
     case XED_ICLASS_PADDQ:          // add packed 64-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_add, IARG_END); break;
     case XED_ICLASS_PSUBB:          // subtract packed 8-bit integers
     case XED_ICLASS_PSUBW:          // subtract packed 16-bit integers
     case XED_ICLASS_PSUBD:          // subtract packed 32-bit integers
     case XED_ICLASS_PSUBQ:          // subtract packed 64-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_sub, IARG_END); break;
     case XED_ICLASS_PMULUDQ:        // multiply unsigned packed 32-bit integers
     case XED_ICLASS_PMULLD:         // multiply signed packed 32-bit integers
     case XED_ICLASS_VPMULLD:        // multiply signed packed 32-bit integers
     case XED_ICLASS_PMULDQ:         // multiply signed packed 32-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_mul, IARG_END); break;
     case XED_ICLASS_PSLLD:          // logical shift left packed 32-bit integers
     case XED_ICLASS_PSRLD:          // logical shift right packed 32-bit integers
     case XED_ICLASS_PSLLQ:          // logical shift left packed 64-bit integers
@@ -289,19 +291,15 @@ VOID instrumentInstruction (INS ins, VOID *v)
     case XED_ICLASS_PSRLDQ:         // logical shift right packed 128-bit integers
     case XED_ICLASS_PSRAW:          // arithmetic shift right packed 16-bit integers
     case XED_ICLASS_PSRAD:          // arithmetic shift right packed 32-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_othArith, IARG_END); break;
     case XED_ICLASS_VPADDB:         // add packed 8-bit integers
     case XED_ICLASS_VPADDW:         // add packed 16-bit integers
     case XED_ICLASS_VPADDD:         // add packed 32-bit integers
     case XED_ICLASS_VPADDQ:         // add packed 64-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_add, IARG_END); break;
     case XED_ICLASS_VPSUBB:         // subtract packed 8-bit integers
     case XED_ICLASS_VPSUBW:         // subtract packed 16-bit integers
     case XED_ICLASS_VPSUBD:         // subtract packed 32-bit integers
     case XED_ICLASS_VPSUBQ:         // subtract packed 64-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_sub, IARG_END); break;
     case XED_ICLASS_VPMULUDQ:       // multiply unsigned packed 32-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_mul, IARG_END); break;
     case XED_ICLASS_VPSLLD:         // logical shift left packed 32-bit integers
     case XED_ICLASS_VPSRLD:         // logical shift right packed 32-bit integers
     case XED_ICLASS_VPSLLQ:         // logical shift left packed 64-bit integers
@@ -310,14 +308,11 @@ VOID instrumentInstruction (INS ins, VOID *v)
     case XED_ICLASS_VPSRLDQ:        // logical shift right packed 128-bit integers
     case XED_ICLASS_VPSRAW:         // arithmetic shift right packed 16-bit integers
     case XED_ICLASS_VPSRAD:         // arithmetic shift right packed 32-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_othArith, IARG_END); break;
     case XED_ICLASS_PMINUB:         // minimum of packed unsigned 8-bit integers
     case XED_ICLASS_VPMINUB:        // minimum of packed unsigned 8-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_othArith, IARG_END); break;
     case XED_ICLASS_MOVDQA:         // move aligned 64-bit integers
     case XED_ICLASS_MOVDQU:         // move unaligned 64-bit integers
     case XED_ICLASS_LDDQU:          // move unaligned 128 bits
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_load_store, IARG_END); break;
     case XED_ICLASS_PSHUFB:         // shuffle 8-bit integers
     case XED_ICLASS_PSHUFW:         // shuffle 16-bit integers
     case XED_ICLASS_PSHUFD:         // shuffle 32-bit integers (see above)
@@ -327,7 +322,6 @@ VOID instrumentInstruction (INS ins, VOID *v)
     case XED_ICLASS_PUNPCKHBW:      // interleave high 16-bit integers
     case XED_ICLASS_PUNPCKLDQ:      // interleave low 64-bit integers
     case XED_ICLASS_PUNPCKHDQ:      // interleave high 64-bit integers
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_shuffle, IARG_END); break;
     case XED_ICLASS_MOVAPS:         // move aligned packed 32-bit floats
     case XED_ICLASS_MOVUPS:         // move unaligned packed 32-bit floats
     case XED_ICLASS_PINSRB:         // insert 8 bits
@@ -340,7 +334,9 @@ VOID instrumentInstruction (INS ins, VOID *v)
     case XED_ICLASS_VPINSRQ:        // insert 64 bits
     case XED_ICLASS_PALIGNR:        // align right
     case XED_ICLASS_VPALIGNR:       // align right
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_load_store, IARG_END); break;
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_integer, IARG_END); break;
+
+    // single-precision operations
     case XED_ICLASS_ADDPS:          // single precision packed addition
         INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_add, IARG_END); break;
     case XED_ICLASS_SUBPS:          // single precision packed subtraction
@@ -426,6 +422,7 @@ VOID printResults (INT32 code, VOID *v)
     cout << "LOAD/STORE operarions  " << load_store << endl;
     cout << "LOGICAL operations     " << logical << endl;
     cout << "SHUFFLE operations     " << shuffle << endl;
+    cout << "INTEGER operations     " << integer << endl;
 }
 
 int main(int argc, char *argv[])
