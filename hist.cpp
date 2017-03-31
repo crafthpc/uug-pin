@@ -18,67 +18,67 @@ UINT64 totalUnhandledInstructions = 0;
     INS_InsertCall(insn, IPOINT_BEFORE, (AFUNPTR)docount, IARG_END);
  * analysis function (called whenever an instruction is executed)
  */
-VOID count_load_store (UINT32 id)
+VOID count_load_store ()
 {
     load_store++;
 }
 
-VOID count_add (UINT32 id)
+VOID count_add ()
 {
     additions++;
     arithmetic++;
 }
 
-VOID count_sub (UINT32 id)
+VOID count_sub ()
 {
     subtractions++;
     arithmetic++;
 }
 
-VOID count_div (UINT32 id)
+VOID count_div ()
 {
     divisions++;
     arithmetic++;
 }
 
-VOID count_mul (UINT32 id)
+VOID count_mul ()
 {
     multiplications++;
     arithmetic++;
 }
 
-VOID count_compare (UINT32 id)
+VOID count_compare ()
 {
     compare++;
 }
 
-VOID count_othArith (UINT32 id)
+VOID count_othArith ()
 {
     othArith++;
     arithmetic++;
 }
 
-VOID count_conversion (UINT32 id)
+VOID count_conversion ()
 {
     conversion++;
 }
 
-VOID count_control (UINT32 id)
+VOID count_control ()
 {
     control++;
 }
 
-VOID count_logical (UINT32 id)
+VOID count_logical ()
 {
     logical++;
 }
 
-VOID count_shuffle (UINT32 id)
+VOID count_shuffle ()
 {
     shuffle++;
 }
 
-VOID count_integer (UINT32 id)
+VOID count_integer ()
 {
     integer++;
 }
