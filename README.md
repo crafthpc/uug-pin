@@ -2,6 +2,8 @@
 
 Pintool demonstration for JMU Unix Users Group
 
+This fork contains additional tools for floating-point analysis.
+
 
 ## Installing Pin
 
